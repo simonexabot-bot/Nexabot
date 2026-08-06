@@ -1,0 +1,2 @@
+# Nexabot
+AI Trading Bot
