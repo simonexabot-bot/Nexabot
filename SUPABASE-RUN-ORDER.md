@@ -7,12 +7,16 @@ The SQL files have dependencies. Run them individually in Supabase SQL Editor, i
 3. `supabase/migrations/003_auth_bootstrap.sql`
 4. `supabase/migrations/004_backfill_and_deposit_workflow.sql`
 5. `supabase/migrations/005_customer_funding_requests.sql`
+6. `supabase/migrations/006_admin_operations.sql`
+7. `supabase/migrations/007_identity_administration.sql`
+8. `supabase/migrations/008_deposit_approval_and_balances.sql`
+9. `supabase/migrations/009_safe_account_lifecycle.sql`
 
 Click **Run** after pasting each complete file. Stop immediately if a file displays an error; do not run the next file yet.
 
 ## Verify tables
 
-Run this after all five complete:
+Run this after all nine complete:
 
 ```sql
 select table_name
