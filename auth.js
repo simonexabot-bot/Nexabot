@@ -10,9 +10,11 @@ const status = (text, error = false) => { message.style.display = 'block'; messa
 let mode = 'signup';
 const tabs = document.querySelectorAll('.tab');
 const nameField = document.querySelector('#name-field');
+const mobileField = document.querySelector('#mobile-field');
 const title = document.querySelector('#title');
 const intro = document.querySelector('#intro');
 const name = document.querySelector('#name');
+const mobile = document.querySelector('#mobile');
 const password = document.querySelector('#password');
 
 tabs.forEach((tab) => tab.addEventListener('click', () => {
@@ -22,7 +24,9 @@ tabs.forEach((tab) => tab.addEventListener('click', () => {
   title.textContent = isLogin ? 'Welcome back' : 'Create your account';
   intro.textContent = isLogin ? 'Log in to access your NexaTrade account.' : 'Use your email address to start a secure account setup.';
   nameField.style.display = isLogin ? 'none' : 'grid';
+  mobileField.style.display = isLogin ? 'none' : 'grid';
   name.required = !isLogin;
+  mobile.required = !isLogin;
   password.autocomplete = isLogin ? 'current-password' : 'new-password';
   submit.innerHTML = isLogin ? 'Log in&nbsp; →' : 'Create account&nbsp; →';
   message.style.display = 'none';
@@ -38,7 +42,8 @@ form.addEventListener('submit', async (event) => {
   const secret = password.value;
   try {
     if (mode === 'signup') {
-      const { error } = await supabase.auth.signUp({ email, password: secret, options: { data: { display_name: name.value.trim() }, emailRedirectTo: `${location.origin}${location.pathname.replace('login.html', 'dashboard.html')}` } });
+      const mobileNumber=mobile.value.trim();if(!/^\+[1-9][0-9]{7,14}$/.test(mobileNumber))throw new Error('Enter a valid mobile number with country code, for example +19171234567.');
+      const { error } = await supabase.auth.signUp({ email, password: secret, options: { data: { display_name: name.value.trim(), mobile_number: mobileNumber }, emailRedirectTo: `${location.origin}${location.pathname.replace('login.html', 'dashboard.html')}` } });
       if (error) throw error;
       status('Check your email to confirm your account, then log in.');
     } else {
