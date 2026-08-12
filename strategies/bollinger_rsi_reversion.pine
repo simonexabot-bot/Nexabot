@@ -1,0 +1,28 @@
+//@version=5
+strategy("Nexa Bollinger RSI Reversion — Research",overlay=true,pyramiding=0,process_orders_on_close=true,commission_type=strategy.commission.percent,commission_value=0.10)
+bbLen=input.int(20,"Bollinger length",minval=5)
+bbMult=input.float(2.0,"Band deviation",minval=0.5,step=0.25)
+rsiLen=input.int(14,"RSI length",minval=2)
+oversold=input.int(30,"RSI oversold",minval=5,maxval=45)
+trendLen=input.int(200,"Uptrend filter EMA",minval=20)
+atrLen=input.int(14,"ATR length",minval=2)
+stopATR=input.float(2.0,"Emergency stop ATR",minval=0.5,step=0.25)
+basis=ta.sma(close,bbLen)
+deviation=ta.stdev(close,bbLen)*bbMult
+upper=basis+deviation
+lower=basis-deviation
+rsi=ta.rsi(close,rsiLen)
+trend=ta.ema(close,trendLen)
+longSignal=barstate.isconfirmed and close<lower and rsi<oversold and close>trend
+if longSignal and strategy.position_size==0
+    strategy.entry("Long",strategy.long)
+if strategy.position_size>0
+    strategy.exit("Protective stop","Long",stop=strategy.position_avg_price-stopATR*ta.atr(atrLen))
+if barstate.isconfirmed and close>=basis and strategy.position_size>0
+    strategy.close("Long",comment="Mean reached")
+plot(basis,"Mean",color=color.gray)
+u=plot(upper,"Upper band",color=color.blue)
+l=plot(lower,"Lower band",color=color.blue)
+fill(u,l,color=color.new(color.blue,92))
+plot(trend,"Trend filter",color=color.orange)
+alertcondition(longSignal,"Oversold pullback","Confirmed Bollinger/RSI pullback setup")

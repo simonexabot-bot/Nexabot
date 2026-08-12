@@ -1,0 +1,43 @@
+//@version=5
+strategy("Nexa Adaptive Trend Flow — Research",overlay=true,pyramiding=0,process_orders_on_close=true,commission_type=strategy.commission.percent,commission_value=0.10)
+mainLen=input.int(8,"Main length",minval=2)
+smoothLen=input.int(14,"Volatility smoothing",minval=2)
+sensitivity=input.float(2.0,"Band sensitivity",minval=0.25,step=0.25)
+rewardRisk=input.float(1.75,"Reward/risk",minval=0.5,step=0.25)
+allowShort=input.bool(false,"Allow short positions")
+source=hlc3
+fast=ta.ema(source,mainLen)
+slow=ta.ema(source,mainLen*2)
+basis=(fast+slow)/2
+volatility=ta.ema(ta.stdev(source,mainLen),smoothLen)
+upper=basis+volatility*sensitivity
+lower=basis-volatility*sensitivity
+var int trend=0
+previous=trend
+if barstate.isconfirmed
+    if trend<=0 and close>upper
+        trend:=1
+    else if trend>=0 and close<lower
+        trend:=-1
+longSignal=barstate.isconfirmed and trend==1 and previous!=1
+shortSignal=barstate.isconfirmed and allowShort and trend==-1 and previous!=-1
+if longSignal
+    strategy.entry("Long",strategy.long)
+if shortSignal
+    strategy.entry("Short",strategy.short)
+if strategy.position_size>0
+    risk=math.max(strategy.position_avg_price-lower,syminfo.mintick)
+    strategy.exit("Long risk","Long",stop=lower,limit=strategy.position_avg_price+risk*rewardRisk)
+if strategy.position_size<0
+    risk=math.max(upper-strategy.position_avg_price,syminfo.mintick)
+    strategy.exit("Short risk","Short",stop=upper,limit=strategy.position_avg_price-risk*rewardRisk)
+if trend==-1 and strategy.position_size>0
+    strategy.close("Long",comment="Flow reversal")
+if trend==1 and strategy.position_size<0
+    strategy.close("Short",comment="Flow reversal")
+plot(basis,"Basis",color=color.gray)
+u=plot(upper,"Upper",color=trend==1?color.lime:color.gray)
+l=plot(lower,"Lower",color=trend==-1?color.red:color.gray)
+fill(u,l,color=color.new(trend==1?color.green:color.red,88))
+alertcondition(longSignal,"Adaptive long","Adaptive Trend Flow changed bullish")
+alertcondition(shortSignal,"Adaptive short","Adaptive Trend Flow changed bearish")

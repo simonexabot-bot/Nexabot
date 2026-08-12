@@ -1,0 +1,32 @@
+//@version=5
+strategy("Nexa EMA Trend Guard — Research",overlay=true,pyramiding=0,process_orders_on_close=true,commission_type=strategy.commission.percent,commission_value=0.10)
+fastLen=input.int(5,"Fast EMA",minval=2)
+slowLen=input.int(13,"Slow EMA",minval=3)
+filterLen=input.int(200,"Trend filter EMA",minval=20)
+atrLen=input.int(14,"ATR length",minval=2)
+stopATR=input.float(2.0,"Stop ATR",minval=0.25,step=0.25)
+rewardRisk=input.float(2.0,"Reward/risk",minval=0.5,step=0.25)
+allowShort=input.bool(false,"Allow short positions")
+fast=ta.ema(close,fastLen)
+slow=ta.ema(close,slowLen)
+filter=ta.ema(close,filterLen)
+atr=ta.atr(atrLen)
+longSignal=barstate.isconfirmed and ta.crossover(fast,slow) and close>filter
+shortSignal=barstate.isconfirmed and allowShort and ta.crossunder(fast,slow) and close<filter
+if longSignal
+    strategy.entry("Long",strategy.long)
+if shortSignal
+    strategy.entry("Short",strategy.short)
+if strategy.position_size>0
+    strategy.exit("Long risk","Long",stop=strategy.position_avg_price-stopATR*atr,limit=strategy.position_avg_price+stopATR*atr*rewardRisk)
+if strategy.position_size<0
+    strategy.exit("Short risk","Short",stop=strategy.position_avg_price+stopATR*atr,limit=strategy.position_avg_price-stopATR*atr*rewardRisk)
+if barstate.isconfirmed and ta.crossunder(fast,slow) and strategy.position_size>0
+    strategy.close("Long",comment="Trend reversal")
+if barstate.isconfirmed and ta.crossover(fast,slow) and strategy.position_size<0
+    strategy.close("Short",comment="Trend reversal")
+plot(fast,"Fast EMA",color=color.lime,linewidth=2)
+plot(slow,"Slow EMA",color=color.red,linewidth=2)
+plot(filter,"Regime filter",color=color.blue)
+alertcondition(longSignal,"Confirmed long setup","Confirmed EMA trend long setup")
+alertcondition(shortSignal,"Confirmed short setup","Confirmed EMA trend short setup")
