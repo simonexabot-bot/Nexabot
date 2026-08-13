@@ -9,8 +9,10 @@ const draw = () => {
   const min = Math.min(...prices), max = Math.max(...prices), range = max - min || 1;
   line.setAttribute('points', prices.map((price, i) => `${(i / (prices.length - 1)) * 500},${180 - ((price - min) / range) * 150}`).join(' '));
 };
-const socket = new WebSocket('wss://ws-feed.exchange.coinbase.com');
-socket.onopen = () => socket.send(JSON.stringify({ type: 'subscribe', product_ids: ['BTC-USD'], channels: ['ticker'] }));
+let socket, reconnectTimer, reconnectAttempts = 0, intentionallyClosed = false;
+function connect() {
+socket = new WebSocket('wss://ws-feed.exchange.coinbase.com');
+socket.onopen = () => { reconnectAttempts = 0; socket.send(JSON.stringify({ type: 'subscribe', product_ids: ['BTC-USD'], channels: ['ticker'] })); };
 socket.onmessage = ({ data }) => {
   const tick = JSON.parse(data);
   if (tick.type !== 'ticker' || tick.product_id !== 'BTC-USD') return;
@@ -21,5 +23,9 @@ socket.onmessage = ({ data }) => {
   label.textContent = 'BTC / USD · Live Coinbase market data';
   prices.push(price); if (prices.length > 50) prices.shift(); draw();
 };
-socket.onerror = () => { label.textContent = 'Live market feed unavailable'; };
-socket.onclose = () => { if (!prices.length) label.textContent = 'Live market feed disconnected'; };
+socket.onerror = () => { label.textContent = 'Live market feed unavailable'; socket.close(); };
+socket.onclose = () => { if (intentionallyClosed) return; label.textContent = 'Live market feed reconnecting…'; const delay = Math.min(30000, 1000 * 2 ** reconnectAttempts++); clearTimeout(reconnectTimer); reconnectTimer = setTimeout(connect, delay); };
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden) return; if (!socket || socket.readyState === WebSocket.CLOSED) { clearTimeout(reconnectTimer); connect(); } });
+window.addEventListener('beforeunload', () => { intentionallyClosed = true; clearTimeout(reconnectTimer); socket?.close(); });
+connect();

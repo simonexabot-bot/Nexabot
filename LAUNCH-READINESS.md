@@ -18,9 +18,9 @@
 
 1. Create a Supabase project and apply `supabase/migrations/001_secure_customer_ledger.sql` in its SQL editor.
 2. Configure Supabase Auth: verified email, strong password rules, protected redirect URLs, rate limits/CAPTCHA, and MFA mandatory for operators.
-3. Create a Railway service from this `outputs` folder. Railway runs `npm start`; add `.env.example` values using Railway's secret-variable interface. Verify `/health` returns `{"status":"ok"}`.
+3. Create a Railway service from the repository root. Railway runs `npm start`; add `.env.example` values using Railway's secret-variable interface. Create a second service with `npm run worker` for paper strategy cycles. Verify `/api/health` reports the provider and operations-store state.
 4. Replace the browser prototype’s `localStorage` login with Supabase Auth. Browser code can use only the Supabase URL and publishable key; privileged writes belong in a Railway API.
-5. Build a Railway API that validates the Supabase JWT, checks KYC/risk status, enforces MFA and a two-person approval rule, calls the selected provider, verifies webhooks, and only then appends the ledger and audit records.
+5. Configure the included Railway API with Supabase and provider secrets. It validates customer JWTs, protects internal routes, verifies signed provider webhooks, provisions provider deposit addresses, and records reconciliation. Provider-specific KYC/risk and dual-approval enforcement must be certified before enabling live mode.
 6. Integrate a wallet connector after security review. Show precise permissions, request customer signatures, simulate transactions, and give customers disconnect/revocation controls.
 7. Select a custody/exchange partner and get counsel on licensing, KYC/AML, sanctions screening, consumer disclosures, reporting, geography, and asset safeguarding before accepting funds.
 8. Complete independent smart-contract/application security audits, penetration testing, incident-response drills, monitoring, encrypted backups, and disaster-recovery testing.

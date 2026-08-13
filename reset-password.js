@@ -1,0 +1,7 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+const config=window.NEXA_SUPABASE||{},supabase=createClient(config.url,config.publishableKey),requestForm=document.querySelector('#reset-request'),updateForm=document.querySelector('#reset-update'),message=document.querySelector('#message');
+const show=(text,error=false)=>{message.style.display='block';message.style.color=error?'#f7b1ba':'var(--aqua)';message.textContent=text};
+const recovery=location.hash.includes('type=recovery')||new URL(location.href).searchParams.get('type')==='recovery';
+if(recovery){requestForm.hidden=true;updateForm.hidden=false;document.querySelector('#reset-title').textContent='Choose a new password';document.querySelector('#reset-intro').textContent='Use at least 12 characters and do not reuse another password.'}
+requestForm.onsubmit=async event=>{event.preventDefault();const {error}=await supabase.auth.resetPasswordForEmail(document.querySelector('#reset-email').value.trim(),{redirectTo:`${location.origin}${location.pathname}`});show(error?error.message:'If that address is registered, a recovery link has been sent.',!!error)};
+updateForm.onsubmit=async event=>{event.preventDefault();const {error}=await supabase.auth.updateUser({password:document.querySelector('#reset-secret').value});if(error)return show(error.message,true);show('Password updated. You can now return to customer login.');setTimeout(()=>location.replace('login.html'),1800)};

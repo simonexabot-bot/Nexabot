@@ -16,6 +16,10 @@ const intro = document.querySelector('#intro');
 const name = document.querySelector('#name');
 const mobile = document.querySelector('#mobile');
 const password = document.querySelector('#password');
+const recoveryLink = document.createElement('p');
+recoveryLink.style.textAlign = 'right';
+recoveryLink.innerHTML = '<a href="reset-password.html">Forgot your password?</a>';
+form.insertAdjacentElement('afterend', recoveryLink);
 
 tabs.forEach((tab) => tab.addEventListener('click', () => {
   mode = tab.dataset.mode;

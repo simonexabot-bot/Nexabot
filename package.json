@@ -2,9 +2,16 @@
   "name": "nexatrade-launch-starter",
   "version": "0.1.0",
   "private": true,
-  "description": "Static NexaTrade product experience with a Railway health endpoint.",
+  "description": "NexaTrade customer portal, operations API, and paper-trading worker.",
   "main": "server.js",
-  "scripts": { "start": "node server.js" },
+  "scripts": {
+    "start": "node server.js",
+    "worker": "node worker.js",
+    "test": "node --test",
+    "lint": "eslint .",
+    "check": "npm run lint && npm test"
+  },
   "engines": { "node": ">=20" },
-  "dependencies": { "express": "^5.1.0", "helmet": "^8.1.0" }
+  "dependencies": { "express": "^5.1.0", "helmet": "^8.1.0" },
+  "devDependencies": { "eslint": "^9.33.0" }
 }
