@@ -1,7 +1,13 @@
 (() => {
   'use strict';
   const c=window.NEXA_SITE||{},phone=c.supportPhoneE164||'+16593002482',display=c.supportPhoneDisplay||'+1 659 300 2482';
-  let icon=document.querySelector('link[rel="icon"]');if(!icon){icon=document.createElement('link');icon.rel='icon';icon.type='image/svg+xml';document.head.append(icon)}icon.href='images/logo.svg';
+  const headLink=(rel,href,attrs={})=>{let link=document.querySelector(`link[rel="${rel}"][href="${href}"]`);if(!link){link=document.createElement('link');link.rel=rel;link.href=href;Object.entries(attrs).forEach(([key,value])=>link.setAttribute(key,value));document.head.append(link)}return link};
+  document.querySelectorAll('link[rel="icon"]').forEach(icon=>icon.remove());
+  headLink('icon','images/favicon_io/favicon.ico',{sizes:'any'});
+  headLink('icon','images/favicon_io/favicon-32x32.png',{type:'image/png',sizes:'32x32'});
+  headLink('icon','images/favicon_io/favicon-16x16.png',{type:'image/png',sizes:'16x16'});
+  headLink('apple-touch-icon','images/favicon_io/apple-touch-icon.png',{sizes:'180x180'});
+  headLink('manifest','images/favicon_io/site.webmanifest');
   document.querySelectorAll('.brand-mark').forEach(mark=>{mark.setAttribute('role','img');mark.setAttribute('aria-label','NexaTrade logo');Object.assign(mark.style,{backgroundImage:'url("images/logo.png")',backgroundSize:'cover',backgroundPosition:'center',backgroundRepeat:'no-repeat',clipPath:'none',filter:'none'})});
   document.querySelectorAll('a[href^="tel:"]').forEach(link=>{link.href=`tel:${phone}`;if(!link.classList.contains('call-nav'))link.textContent=display});document.querySelectorAll('a[href*="wa.me/"]').forEach(link=>{link.href=`https://wa.me/${phone.replace(/\D/g,'')}`});
   if(!document.querySelector('.nexa-call-float')){const call=document.createElement('a');call.className='nexa-call-float';call.href=`tel:${phone}`;call.setAttribute('aria-label',`Call NexaTrade at ${display}`);call.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8c1.5 2.9 3.8 5.2 6.7 6.7l2.2-2.2c.3-.3.7-.4 1.1-.3 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.8 21 3 13.2 3 3.6c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.3 1.1l-2.2 2.3z"/></svg><span><small>Call now</small><b></b></span>';call.querySelector('b').textContent=display;document.body.append(call)}
