@@ -28,7 +28,7 @@ app.use(async (request, response, next) => {
     if (!fullPath.startsWith(path.resolve(__dirname) + path.sep)) return next();
     let html; try { html = await fs.readFile(fullPath, 'utf8'); } catch { return next(); }
     const bootstrap = '<link rel="icon" href="images/favicon_io/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="images/favicon_io/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="images/favicon_io/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="images/favicon_io/apple-touch-icon.png"><link rel="manifest" href="images/favicon_io/site.webmanifest"><link rel="stylesheet" href="logo.css"><script src="site-config.js"></script><script defer src="site.js"></script>';
-    html = html.replace('</head>', `${bootstrap}</head>`).replaceAll('+19171231234', '+16593002482').replaceAll('+1 917 123 1234', '+1 659 300 2482').replaceAll('19171231234', '16593002482');
+    html = html.replace('</head>', `${bootstrap}</head>`).replaceAll('+19171231234', '+15209556559').replaceAll('+1 917 123 1234', '+1 520 955 6559').replaceAll('19171231234', '15209556559').replaceAll('+16593002482', '+15209556559').replaceAll('+1 659 300 2482', '+1 520 955 6559').replaceAll('16593002482', '15209556559');
     response.type('html').send(html);
   } catch (error) { next(error); }
 });
