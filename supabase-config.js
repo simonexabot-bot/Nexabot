@@ -11,6 +11,14 @@ if ((location.pathname.endsWith('/') || location.pathname.endsWith('/index.html'
   academyPolish.rel = 'stylesheet';
   academyPolish.href = 'academy-home-polish.css';
   document.head.append(academyPolish);
+  const salesStyles = document.createElement('link');
+  salesStyles.rel = 'stylesheet';
+  salesStyles.href = 'academy-sales.css';
+  document.head.append(salesStyles);
+  const salesScript = document.createElement('script');
+  salesScript.src = 'academy-sales.js';
+  salesScript.defer = true;
+  document.head.append(salesScript);
 }
 
 // Shared branding, contact details, and optional consent-aware Google tags.

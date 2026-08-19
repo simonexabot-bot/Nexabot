@@ -2,7 +2,7 @@
 window.NEXA_SITE = {
   supportPhoneDisplay: '+1 520 955 6559',
   supportPhoneE164: '+15209556559',
-  googleAnalyticsId: '', // G-XXXXXXXXXX
+  googleAnalyticsId: 'G-DYWFL44B03',
   googleAdsId: '',       // AW-XXXXXXXXXX
   adsenseClient: ''      // ca-pub-XXXXXXXXXXXXXXXX
 };
