@@ -16,6 +16,7 @@ class SupabaseOps {
   acquireLease(key, owner, seconds = 90) { return this.rpc('acquire_worker_lease', { p_key: key, p_owner: owner, p_seconds: seconds }); }
   saveSignal(signal) { return this.request('strategy_signals', { method: 'POST', body: signal }); }
   savePaperOrder(order) { return this.request('paper_orders', { method: 'POST', headers: { prefer: 'resolution=ignore-duplicates,return=representation' }, body: order }); }
+  runArbitrageSimulations(limit = 100) { return this.rpc('worker_run_arbitrage_simulation', { p_limit: limit }); }
   saveReconciliation(run) { return this.request('reconciliation_runs', { method: 'POST', body: run }); }
 }
 module.exports = { SupabaseOps };
