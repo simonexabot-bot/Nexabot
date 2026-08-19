@@ -1,0 +1,6 @@
+.advanced-section{margin-top:2rem;padding:clamp(1.25rem,3vw,2rem);border:1px solid rgba(87,225,211,.26);border-radius:20px;background:linear-gradient(145deg,rgba(12,31,54,.96),rgba(13,22,46,.96));box-shadow:0 18px 50px rgba(0,0,0,.16)}
+.advanced-section>h3{font-size:clamp(1.45rem,3vw,2rem);margin:.7rem 0}.advanced-section h4{margin:1.5rem 0 .55rem;color:#e8f7ff}.advanced-section li{margin:.55rem 0;color:var(--muted)}
+.formula-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.75rem}.formula-grid div{padding:1rem;border:1px solid rgba(125,166,255,.24);border-radius:12px;background:rgba(5,16,34,.62);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#aef7ef}
+.advanced-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-top:.5rem}.advanced-grid>div{padding:1rem 1.15rem;border-radius:14px;background:rgba(7,20,40,.68)}
+.ethics-note{margin-top:1.25rem;padding:1rem 1.15rem;border-left:4px solid #f3bb55;border-radius:10px;background:rgba(243,187,85,.08)}.ethics-note h4{margin-top:0;color:#ffd889}
+#download-advanced-workbook{margin-top:1.25rem}@media(max-width:720px){.advanced-grid{grid-template-columns:1fr}.advanced-section{padding:1rem}}

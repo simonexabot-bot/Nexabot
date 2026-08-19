@@ -1,0 +1,5 @@
+import{requireCustomer,supabase,q}from'./portal-common.js';
+const session=await requireCustomer(),input=q('#presale-usd'),estimate=q('#presale-estimate'),message=q('#presale-message');
+function update(){estimate.textContent=`${Number(input.value||0).toLocaleString()} ANXB`}
+input.min='50';input.oninput=update;update();
+if(session)q('#presale-register').onclick=async()=>{const amount=Number(input.value);if(amount<50){message.style.display='block';message.textContent='Enter an amount of at least $50.';return}const {error}=await supabase.rpc('customer_create_presale_order',{p_usd:amount});message.style.display='block';if(error){message.textContent='Presale ordering is temporarily unavailable. Please contact support directly.';return}message.textContent='Your order request has been recorded. Opening WhatsApp for verified purchase instructions.';const text=encodeURIComponent(`Hello NEXA team, I created a presale request for approximately ${amount.toLocaleString()} ANXB at $1 per token. Please provide eligibility requirements, official contract details and purchase instructions.`);window.open(`https://wa.me/15209556559?text=${text}`,'_blank','noopener')};
