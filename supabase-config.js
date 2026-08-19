@@ -18,6 +18,24 @@ if ((location.pathname.endsWith('/') || location.pathname.endsWith('/index.html'
   const salesScript = document.createElement('script');
   salesScript.src = 'academy-sales.js';
   salesScript.defer = true;
+  salesScript.onload = () => {
+    const clarityStyles = document.createElement('link');
+    clarityStyles.rel = 'stylesheet';
+    clarityStyles.href = 'program-clarity.css';
+    document.head.append(clarityStyles);
+    const clarityScript = document.createElement('script');
+    clarityScript.src = 'program-clarity.js';
+    clarityScript.onload = () => {
+      const visualStyles = document.createElement('link');
+      visualStyles.rel = 'stylesheet';
+      visualStyles.href = 'academy-visual-upgrade.css';
+      document.head.append(visualStyles);
+      const visualScript = document.createElement('script');
+      visualScript.src = 'academy-visual-upgrade.js';
+      document.head.append(visualScript);
+    };
+    document.head.append(clarityScript);
+  };
   document.head.append(salesScript);
 }
 

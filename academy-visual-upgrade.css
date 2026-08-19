@@ -1,0 +1,30 @@
+:root{--visual-teal:#5eead4;--visual-blue:#60a5fa;--visual-violet:#a78bfa;--visual-ink:#07101e}
+body.visual-upgrade{background-image:radial-gradient(circle at 12% 4%,rgba(45,212,191,.08),transparent 24rem),radial-gradient(circle at 88% 14%,rgba(96,165,250,.07),transparent 26rem)}
+.visual-upgrade .hero{position:relative;isolation:isolate;overflow:hidden}
+.visual-upgrade .hero:before{content:"";position:absolute;z-index:-1;width:34rem;height:34rem;right:-11rem;top:-12rem;border-radius:50%;background:conic-gradient(from 30deg,rgba(94,234,212,.18),rgba(96,165,250,.05),rgba(167,139,250,.16),rgba(94,234,212,.18));filter:blur(2px);animation:visual-orbit 18s linear infinite}
+.visual-upgrade .hero h1{max-width:900px;letter-spacing:-.045em;text-wrap:balance}
+.visual-upgrade .hero h1 em{font-style:normal;color:transparent;background:linear-gradient(100deg,var(--visual-teal),#d9fffa 48%,#9dc7ff);background-clip:text;-webkit-background-clip:text}
+.visual-upgrade .hero p{max-width:760px;font-size:clamp(1rem,1.6vw,1.2rem)}
+.hero-support-badge{display:inline-flex;align-items:center;gap:.65rem;margin-top:1.15rem;padding:.62rem .9rem;border:1px solid rgba(94,234,212,.28);border-radius:999px;background:rgba(7,16,30,.62);color:#c9fff6;font-size:.82rem;font-weight:700;backdrop-filter:blur(12px);box-shadow:0 12px 32px rgba(0,0,0,.18)}
+.hero-support-badge:before{content:"";width:.55rem;height:.55rem;border-radius:50%;background:var(--visual-teal);box-shadow:0 0 0 .3rem rgba(94,234,212,.12),0 0 18px var(--visual-teal)}
+.program-selector{position:relative}
+.program-selector:before{content:"";position:absolute;inset:12% -8%;z-index:-1;background:radial-gradient(circle,rgba(96,165,250,.08),transparent 65%);filter:blur(20px)}
+.program-card{position:relative;overflow:hidden;isolation:isolate;border-color:rgba(148,163,184,.2);box-shadow:0 22px 60px rgba(0,0,0,.2);transform:translateZ(0)}
+.program-card:before{content:attr(data-program-icon);display:grid;place-items:center;width:3.35rem;height:3.35rem;margin-bottom:1.15rem;border-radius:1rem;font:800 .7rem/1 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.08em;color:#dffefa;background:linear-gradient(145deg,rgba(94,234,212,.2),rgba(96,165,250,.08));border:1px solid rgba(94,234,212,.25);box-shadow:inset 0 1px rgba(255,255,255,.12),0 14px 34px rgba(0,0,0,.2)}
+.program-card:after{content:"";position:absolute;inset:0;z-index:-1;opacity:0;background:radial-gradient(350px circle at var(--mx,50%) var(--my,50%),rgba(94,234,212,.13),transparent 46%);transition:opacity .25s ease}
+.program-card:hover:after{opacity:1}
+.program-card:nth-child(2):before{color:#dcecff;background:linear-gradient(145deg,rgba(96,165,250,.22),rgba(59,130,246,.05));border-color:rgba(96,165,250,.3)}
+.program-card:nth-child(3):before{color:#eee8ff;background:linear-gradient(145deg,rgba(167,139,250,.23),rgba(124,58,237,.05));border-color:rgba(167,139,250,.3)}
+.program-card h3{font-size:clamp(1.35rem,2.2vw,1.75rem);letter-spacing:-.025em}
+.program-card .button,.visual-upgrade .button-primary{box-shadow:0 12px 30px rgba(70,170,160,.18);transition:transform .2s ease,box-shadow .2s ease,filter .2s ease}
+.program-card .button:hover,.visual-upgrade .button-primary:hover{transform:translateY(-2px);filter:brightness(1.08);box-shadow:0 17px 38px rgba(70,170,160,.26)}
+.visual-upgrade .course-card,.visual-upgrade .path-grid article,.visual-upgrade .value-grid article{position:relative;overflow:hidden}
+.visual-upgrade .course-card:before{content:"";position:absolute;left:0;top:0;width:100%;height:3px;background:linear-gradient(90deg,var(--visual-teal),var(--visual-blue),transparent)}
+.visual-upgrade .course-card:hover{border-color:rgba(94,234,212,.32);box-shadow:0 20px 48px rgba(0,0,0,.22)}
+.visual-upgrade section>h2{text-wrap:balance;letter-spacing:-.035em}
+.visual-upgrade .sales-contact{background:linear-gradient(135deg,rgba(13,36,50,.94),rgba(20,25,55,.94));border-color:rgba(94,234,212,.25);box-shadow:0 22px 70px rgba(0,0,0,.24)}
+.visual-reveal{opacity:0;transform:translateY(22px);transition:opacity .65s ease,transform .65s cubic-bezier(.2,.7,.2,1)}
+.visual-reveal.is-visible{opacity:1;transform:none}
+@keyframes visual-orbit{to{transform:rotate(360deg)}}
+@media(max-width:760px){.visual-upgrade .hero:before{width:24rem;height:24rem;right:-13rem}.hero-support-badge{border-radius:1rem;line-height:1.35}.program-card:before{width:3rem;height:3rem}}
+@media(prefers-reduced-motion:reduce){.visual-upgrade .hero:before{animation:none}.visual-reveal{opacity:1;transform:none;transition:none}}
