@@ -12,6 +12,7 @@ async function cycle() {
   return lock.run('worker-cycle', async () => {
     const acquired = await store.acquireLease('paper-strategy-worker', workerId, Math.ceil(config.workerIntervalMs / 1000) + 30);
     if (!(acquired === true || acquired?.[0]?.acquire_worker_lease === true)) return { skipped: true, reason: 'distributed_lock' };
+    const simulationTrades = await store.runArbitrageSimulations(100);
     const enrollments = await store.claimWork(25);
     for (const enrollment of enrollments || []) {
       const product = `${enrollment.asset_symbol}-USD`, candles = await market.candles(product, enrollment.granularity || 3600, 100), result = evaluate(candles, enrollment.strategy_code, enrollment.paper_position || null);
@@ -21,7 +22,7 @@ async function cycle() {
         if (quantity > 0) { const order = paper.submit({ accountId: enrollment.account_id, product, side, quantity, referencePrice: result.price, idempotencyKey: `${enrollment.id}:${candles.at(-1).time}:${side}` }); await store.savePaperOrder({ id: order.id, enrollment_id: enrollment.id, idempotency_key: order.idempotencyKey, side, product, quantity, reference_price: order.referencePrice, fill_price: order.fillPrice, fee: order.fee, status: order.status, filled_at: order.filledAt }); }
       }
     }
-    return { processed: enrollments?.length || 0, runId: crypto.randomUUID() };
+    return { processed: enrollments?.length || 0, simulationTrades: simulationTrades?.length || 0, runId: crypto.randomUUID() };
   });
 }
 

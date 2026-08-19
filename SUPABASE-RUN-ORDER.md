@@ -17,7 +17,7 @@ Do not approve or settle the current BTC test request shown as chain `1` with an
 
 ## Clean Supabase project
 
-For a brand-new database, run every file individually in numeric order from `001` through `020`. Stop on the first SQL error and resolve it before proceeding. Never skip an earlier migration.
+For a brand-new database, run every file individually in numeric order through the latest migration (`024` currently). Stop on the first SQL error and resolve it before proceeding. Never skip an earlier migration.
 
 ## Staff account creation
 
