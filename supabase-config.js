@@ -6,6 +6,13 @@ window.NEXA_SUPABASE = {
   publishableKey: 'sb_publishable_EuoLc4sCZq1XJpB7YnnACg_vveKaKJz'
 };
 
+if ((location.pathname.endsWith('/') || location.pathname.endsWith('/index.html')) && !document.querySelector('link[href="academy-home-polish.css"]')) {
+  const academyPolish = document.createElement('link');
+  academyPolish.rel = 'stylesheet';
+  academyPolish.href = 'academy-home-polish.css';
+  document.head.append(academyPolish);
+}
+
 // Shared branding, contact details, and optional consent-aware Google tags.
 if (!document.querySelector('link[href="logo.css"]')) {
   const styles = document.createElement('link'); styles.rel = 'stylesheet'; styles.href = 'logo.css'; document.head.append(styles);
