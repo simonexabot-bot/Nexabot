@@ -1,0 +1,1 @@
+const nav=document.querySelector('.nav-links,.nav-right,nav');if(nav&&!nav.querySelector('[data-academy-hub]')){const hub=document.createElement('a');hub.dataset.academyHub='';hub.href='academy-dashboard.html';hub.textContent='My learning';nav.prepend(hub)}

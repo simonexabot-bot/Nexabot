@@ -1,0 +1,1 @@
+const nav=document.querySelector('header nav');if(nav){[['academy-services.html','Support & notices'],['academy-legal.html','Policies']].reverse().forEach(([href,label])=>{if(!nav.querySelector(`a[href="${href}"]`)){const a=document.createElement('a');a.href=href;a.textContent=label;nav.prepend(a)}})}
